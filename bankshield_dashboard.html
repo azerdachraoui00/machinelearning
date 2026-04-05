@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BankShield — CVE Dashboard + Test Console</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04070c;--bg2:#070d16;--bg3:#0c1520;--bg4:#101c2b;
+  --b1:#152030;--b2:#1c2e44;--b3:#274060;
+  --t1:#cde0f4;--t2:#7090b0;--t3:#334a62;--t4:#1a2e42;
+  --ac:#00d8ff;--ac2:#008aaa;--ac3:#004a60;
+  --gr:#00ef78;--gr2:#009448;--gr3:#003d20;
+  --rd:#ff2d55;--rd2:#961830;--rd3:#380610;
+  --or:#ff8800;--or2:#8a4a00;--or3:#341c00;
+  --yw:#ffc800;--yw2:#786000;
+  --pu:#9960ff;--pu2:#4a28a0;--pu3:#1e0e40;
+  --pi:#ff50a0;--pi2:#880040;
+  --mono:'JetBrains Mono',monospace;
+  --head:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--t1);font-family:var(--mono);overflow:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 100% 60% at 20% 0%,rgba(0,216,255,.04) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 50% at 80% 100%,rgba(153,96,255,.03) 0%,transparent 50%);
+  pointer-events:none;z-index:0}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,216,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,216,255,.03) 1px,transparent 1px);
+  background-size:36px 36px}
+
+.app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
+
+/* ── TOP BAR ── */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;height:50px;flex-shrink:0;
+  background:rgba(7,13,22,.97);border-bottom:1px solid var(--b1);
+}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--head);font-size:15px;font-weight:800;color:var(--ac)}
+.hex{width:28px;height:28px;background:linear-gradient(135deg,var(--ac),var(--pu));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;font-weight:900;
+  animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+.bar-pills{display:flex;align-items:center;gap:10px}
+.pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:3px;border:1px solid;font-size:8px;letter-spacing:1px;font-family:var(--head)}
+.p-live{color:var(--gr);border-color:var(--gr2);background:rgba(0,239,120,.05)}
+.p-nvd{color:var(--ac);border-color:var(--ac2);background:rgba(0,216,255,.05)}
+.p-err{color:var(--rd);border-color:var(--rd2);background:rgba(255,45,85,.05)}
+.p-test{color:var(--pu);border-color:var(--pu2);background:rgba(153,96,255,.06);cursor:pointer;transition:all .15s}
+.p-test:hover,.p-test.on{background:rgba(153,96,255,.15);border-color:var(--pu);color:#c090ff}
+.blink{width:6px;height:6px;border-radius:50%;background:currentColor;animation:bl 1s ease-in-out infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.15}}
+.clock{font-size:11px;color:var(--ac);letter-spacing:1px;font-family:var(--mono)}
+
+/* ── LAYOUT ── */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:210px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;overflow-y:auto;padding-bottom:12px}
+.sl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);
+  padding:12px 14px 5px;font-family:var(--head)}
+.nav{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:10px;
+  color:var(--t2);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.nav:hover{background:var(--bg3);color:var(--t1)}
+.nav.on{background:rgba(0,216,255,.06);color:var(--ac);border-left-color:var(--ac)}
+.nbadge{margin-left:auto;font-size:8px;padding:1px 5px;border-radius:2px}
+.nb-r{background:var(--rd2);color:#ffaabb}
+.nb-g{background:var(--gr2);color:#aaffcc}
+.nb-p{background:var(--pu2);color:#c8aaff}
+.host{display:flex;align-items:center;gap:7px;margin:2px 8px;padding:5px 9px;
+  background:var(--bg3);border:1px solid var(--b1);border-radius:3px;font-size:9px;color:var(--t2)}
+.hd{width:6px;height:6px;border-radius:50%}
+.hd-ok{background:var(--gr)}
+.hd-w{background:var(--or);animation:bl 1.5s infinite}
+.hd-c{background:var(--rd);animation:bl .7s infinite}
+.hname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hcnt{color:var(--rd);font-weight:700;font-size:9px}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;flex-shrink:0}
+.kpi{background:var(--bg2);border:1px solid var(--b1);border-radius:5px;padding:13px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.k-total::before{background:var(--ac)}
+.k-crit::before{background:var(--rd);box-shadow:0 0 8px var(--rd)}
+.k-high::before{background:var(--or)}
+.k-med::before{background:var(--yw)}
+.k-aff::before{background:var(--pu)}
+.k-fix::before{background:var(--gr);box-shadow:0 0 8px var(--gr)}
+.kl{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;font-family:var(--head)}
+.kv{font-size:26px;font-weight:700;line-height:1;font-family:var(--head)}
+.k-total .kv{color:var(--ac)}
+.k-crit .kv{color:var(--rd)}
+.k-high .kv{color:var(--or)}
+.k-med .kv{color:var(--yw)}
+.k-aff .kv{color:var(--pu)}
+.k-fix .kv{color:var(--gr)}
+.ks{font-size:8px;color:var(--t3);margin-top:3px}
+
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 310px;gap:12px;flex:1;min-height:0}
+
+/* PANEL */
+.panel{background:var(--bg2);border:1px solid var(--b1);border-radius:5px;overflow:hidden;display:flex;flex-direction:column}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid var(--b1);background:rgba(255,255,255,.01);flex-shrink:0}
+.pt{font-family:var(--head);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:6px}
+.pctrl{display:flex;gap:4px}
+
+/* TABLE */
+.tbl-wrap{overflow-y:auto;flex:1}
+table{width:100%;border-collapse:collapse}
+th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
+  padding:7px 12px;text-align:left;border-bottom:1px solid var(--b1);
+  background:rgba(0,0,0,.35);white-space:nowrap;font-family:var(--head);position:sticky;top:0}
+.tr{border-bottom:1px solid rgba(21,32,48,.5);cursor:pointer;transition:background .12s}
+.tr:hover{background:rgba(0,216,255,.03)}
+.tr.done{opacity:.4}
+.tr.injected{background:rgba(153,96,255,.04)}
+.tr td{padding:8px 12px;font-size:10px;vertical-align:middle}
+.cid{color:var(--ac);font-size:9px;font-weight:500}
+.src-badge{font-size:7px;padding:1px 5px;border-radius:2px;margin-left:4px}
+.src-test{background:var(--pu3);color:var(--pu);border:1px solid var(--pu2)}
+.src-poll{background:rgba(0,148,72,.08);color:var(--gr2);border:1px solid var(--gr3)}
+.sev{display:inline-block;padding:2px 6px;border-radius:2px;font-size:7px;letter-spacing:1px;font-weight:700;text-transform:uppercase}
+.sCRITICAL{background:var(--rd3);color:var(--rd);border:1px solid var(--rd2)}
+.sHIGH{background:var(--or3);color:var(--or);border:1px solid var(--or2)}
+.sMEDIUM{background:rgba(255,200,0,.05);color:var(--yw);border:1px solid var(--yw2)}
+.sLOW{background:rgba(0,138,170,.07);color:var(--ac2);border:1px solid var(--ac3)}
+.sUNKNOWN{background:rgba(51,74,98,.15);color:var(--t3);border:1px solid var(--b2)}
+.htag{display:inline-flex;align-items:center;gap:2px;background:rgba(153,96,255,.1);
+  border:1px solid var(--pu2);color:var(--pu);padding:1px 5px;border-radius:2px;font-size:7px;margin:1px}
+.htag-none{background:rgba(26,46,66,.2);border-color:var(--b1);color:var(--t4)}
+.st{display:flex;align-items:center;gap:4px}
+.sd{width:5px;height:5px;border-radius:50%}
+.st-new .sd{background:var(--ac);animation:bl .8s infinite}
+.st-analyzing .sd{background:var(--yw);animation:bl 1.2s infinite}
+.st-dispatched .sd{background:var(--pu);animation:bl 1s infinite}
+.st-running .sd{background:var(--or);animation:bl .9s infinite}
+.st-patched .sd{background:var(--gr)}
+.st-failed .sd{background:var(--rd)}
+.st-new span{color:var(--ac)}
+.st-analyzing span{color:var(--yw)}
+.st-dispatched span{color:var(--pu)}
+.st-running span{color:var(--or)}
+.st-patched span{color:var(--gr)}
+.st-failed span{color:var(--rd)}
+.st span{font-size:8px}
+.score-b{display:flex;align-items:center;gap:5px;font-size:9px}
+.st-{width:36px;height:3px;background:var(--b2);border-radius:1px;overflow:hidden}
+.sf{height:100%;border-radius:1px}
+
+/* BUTTONS */
+.btn{background:none;border:1px solid var(--b2);color:var(--t2);padding:2px 8px;
+  border-radius:2px;font-family:var(--mono);font-size:8px;cursor:pointer;transition:all .12s}
+.btn:hover{border-color:var(--ac2);color:var(--ac)}
+.btn-g{border-color:var(--gr2);color:var(--gr);background:rgba(0,239,120,.04)}
+.btn-g:hover{background:rgba(0,239,120,.12)}
+.btn-done{border-color:var(--b1);color:var(--t4);cursor:default;pointer-events:none}
+.btn-f{padding:3px 9px;font-size:8px}
+.btn-f.on{background:rgba(0,216,255,.08);border-color:var(--ac2);color:var(--ac)}
+
+/* ── TEST PANEL ── */
+.test-panel{
+  position:fixed;top:50px;right:0;bottom:0;width:460px;
+  background:var(--bg2);border-left:1px solid var(--pu2);
+  z-index:200;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.test-panel.open{transform:translateX(0)}
+.tp-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--b1);
+  background:rgba(153,96,255,.06);flex-shrink:0}
+.tp-title{font-family:var(--head);font-size:12px;font-weight:700;color:var(--pu);letter-spacing:.5px}
+.tp-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+
+/* INJECT FORM */
+.inj-form{background:var(--bg3);border:1px solid var(--pu2);border-radius:5px;padding:14px}
+.inj-title{font-family:var(--head);font-size:10px;font-weight:700;color:var(--pu);
+  margin-bottom:12px;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:8px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;
+  margin-bottom:5px;font-family:var(--head)}
+.field input,.field select{
+  width:100%;background:var(--bg4);border:1px solid var(--b2);color:var(--t1);
+  padding:8px 10px;border-radius:3px;font-family:var(--mono);font-size:11px;
+  outline:none;transition:border-color .15s;
+}
+.field input:focus,.field select:focus{border-color:var(--pu)}
+.field input::placeholder{color:var(--t4)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;background:var(--bg4);border:1px solid var(--b1);border-radius:3px;font-size:10px;color:var(--t2)}
+.tgl{position:relative;width:32px;height:18px}
+.tgl input{opacity:0;width:0;height:0}
+.tgl-track{position:absolute;inset:0;background:var(--b2);border-radius:9px;transition:background .2s}
+.tgl input:checked + .tgl-track{background:var(--pu)}
+.tgl-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;
+  border-radius:50%;transition:transform .2s}
+.tgl input:checked ~ .tgl-thumb{transform:translateX(14px)}
+
+.inject-btn{
+  width:100%;padding:11px;border-radius:4px;
+  background:linear-gradient(135deg,var(--pu2),var(--pu));
+  border:none;color:#fff;font-family:var(--head);font-size:11px;font-weight:700;
+  cursor:pointer;letter-spacing:1px;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.inject-btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px)}
+.inject-btn:disabled{opacity:.5;cursor:default;transform:none}
+.inject-btn.loading::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  animation:shimmer 1.2s infinite;
+}
+@keyframes shimmer{to{left:100%}}
+
+/* INJECT RESULT */
+.result-box{border-radius:4px;overflow:hidden;border:1px solid}
+.result-box.ok{border-color:var(--gr2)}
+.result-box.err{border-color:var(--rd2)}
+.result-hdr{padding:9px 12px;font-family:var(--head);font-size:9px;font-weight:700;letter-spacing:1px}
+.result-box.ok .result-hdr{background:rgba(0,148,72,.1);color:var(--gr)}
+.result-box.err .result-hdr{background:rgba(150,24,48,.1);color:var(--rd)}
+.result-body{padding:12px;background:var(--bg3);display:flex;flex-direction:column;gap:8px}
+.step-row{display:flex;align-items:flex-start;gap:8px;font-size:9px;padding:7px 9px;
+  background:var(--bg4);border:1px solid var(--b1);border-radius:3px}
+.step-icon{font-size:12px;flex-shrink:0}
+.step-info{flex:1}
+.step-label{color:var(--t2);margin-bottom:2px;font-family:var(--head);font-size:8px;letter-spacing:1px;text-transform:uppercase}
+.step-detail{color:var(--t1);line-height:1.5}
+.step-sub{color:var(--t3);font-size:8px;margin-top:2px}
+
+/* BATCH INJECT */
+.batch-area{background:var(--bg3);border:1px solid var(--b2);border-radius:3px;
+  padding:8px 10px;font-size:10px;min-height:72px;width:100%;color:var(--t1);
+  font-family:var(--mono);outline:none;resize:vertical;line-height:1.6}
+.batch-area::placeholder{color:var(--t4)}
+.batch-area:focus{border-color:var(--pu)}
+
+/* QUICK CVEs */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.quick-cve{background:var(--bg4);border:1px solid var(--b1);border-radius:3px;
+  padding:6px 9px;cursor:pointer;transition:all .15s;font-size:9px}
+.quick-cve:hover{border-color:var(--pu2);background:rgba(153,96,255,.07)}
+.qid{color:var(--pu);font-size:9px;margin-bottom:2px}
+.qsev{font-size:7px}
+
+/* TEST LOG */
+.tlog{background:#020508;border:1px solid var(--b1);border-radius:4px;overflow:hidden}
+.tlog-hdr{padding:7px 12px;background:rgba(153,96,255,.05);border-bottom:1px solid var(--b1);
+  font-family:var(--head);font-size:8px;letter-spacing:1.5px;color:var(--pu);display:flex;align-items:center;justify-content:space-between}
+.tlog-body{padding:10px;font-size:9px;max-height:180px;overflow-y:auto;line-height:1.7}
+.ll-s{color:var(--gr)}
+.ll-e{color:var(--rd)}
+.ll-w{color:var(--or)}
+.ll-i{color:var(--t2)}
+.ll-d{color:var(--t4)}
+.cursor{display:inline-block;width:6px;height:10px;background:var(--pu);animation:cur 1s step-end infinite;vertical-align:-1px}
+@keyframes cur{50%{opacity:0}}
+
+/* JOBS SIDE */
+.job{margin:4px 8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--b1);
+  border-radius:3px;font-size:10px;cursor:pointer;transition:border-color .15s}
+.job:hover{border-color:var(--b2)}
+.jh{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.jid{font-size:9px;color:var(--ac)}
+.jsrc{font-size:7px;padding:1px 5px;border-radius:2px;margin-left:4px}
+.jsrc-test{background:var(--pu3);color:var(--pu);border:1px solid var(--pu2)}
+.jsrc-manual{background:rgba(0,138,170,.1);color:var(--ac2);border:1px solid var(--ac3)}
+.jcve{color:var(--t2);font-size:10px;margin-bottom:2px}
+.jhost{color:var(--t3);font-size:8px}
+.jlog{font-size:8px;color:var(--t4);margin-top:4px;padding:4px 6px;
+  background:rgba(0,0,0,.4);border-radius:2px;max-height:55px;overflow-y:auto;line-height:1.7;white-space:pre-line}
+
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;
+  align-items:center;justify-content:center}
+.ov.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:7px;
+  width:560px;max-width:94vw;max-height:86vh;overflow-y:auto}
+.mh{display:flex;align-items:center;justify-content:space-between;
+  padding:15px 19px;border-bottom:1px solid var(--b1)}
+.mtit{font-family:var(--head);font-size:13px;font-weight:700;color:var(--ac)}
+.mb{padding:18px}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.di{background:var(--bg3);border:1px solid var(--b1);border-radius:3px;padding:9px}
+.dil{font-size:7px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;font-family:var(--head)}
+.desc{background:var(--bg3);border:1px solid var(--b1);border-radius:3px;padding:11px;
+  font-size:10px;line-height:1.7;color:var(--t2);margin-bottom:12px}
+.cpe{display:inline-block;background:rgba(0,216,255,.06);border:1px solid var(--ac3);
+  color:var(--ac2);padding:2px 6px;border-radius:2px;font-size:8px;margin:2px}
+.fix-ban{display:flex;align-items:center;gap:11px;background:rgba(0,148,72,.07);
+  border:1px solid var(--gr2);border-radius:4px;padding:11px 13px;font-size:10px}
+.fix-btn{margin-left:auto;background:var(--gr);border:none;color:#000;
+  padding:7px 15px;border-radius:3px;font-family:var(--head);font-size:9px;font-weight:700;
+  cursor:pointer;letter-spacing:1px;white-space:nowrap}
+.fix-btn:hover{background:#00ff88}
+.fix-btn:disabled{background:var(--gr2);color:rgba(0,0,0,.4);cursor:default}
+.ref{color:var(--ac2);font-size:8px;display:block;margin-bottom:3px;
+  text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref:hover{color:var(--ac)}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;padding:9px 16px;border-radius:3px;z-index:999;
+  font-size:9px;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;
+  border:1px solid var(--gr2);color:var(--gr);background:var(--bg3)}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.err{border-color:var(--rd2);color:var(--rd)}
+
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="app" id="root"></div>
+<div id="toast"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+const API = "http://localhost:5000";
+
+// ── QUICK CVEs ──────────────────────────────────────
+const QUICK_CVES = [
+  { id:"CVE-2021-44228", label:"Log4Shell",      sev:"CRITICAL", score:10.0 },
+  { id:"CVE-2021-45046", label:"Log4Shell v2",   sev:"CRITICAL", score:9.0  },
+  { id:"CVE-2022-22965", label:"Spring4Shell",   sev:"CRITICAL", score:9.8  },
+  { id:"CVE-2023-44487", label:"HTTP/2 Rapid",   sev:"HIGH",     score:7.5  },
+  { id:"CVE-2024-3400",  label:"PAN-OS RCE",     sev:"CRITICAL", score:10.0 },
+  { id:"CVE-2023-46604", label:"ActiveMQ RCE",   sev:"CRITICAL", score:10.0 },
+  { id:"CVE-2023-4911",  label:"Looney Tunables",sev:"HIGH",     score:7.8  },
+  { id:"CVE-2024-1709",  label:"ConnectWise",    sev:"CRITICAL", score:10.0 },
+];
+
+// ── UTILS ───────────────────────────────────────────
+const SEV_COLOR = {CRITICAL:"var(--rd)",HIGH:"var(--or)",MEDIUM:"var(--yw)",LOW:"var(--ac2)",UNKNOWN:"var(--t3)"};
+
+function toast(msg, err=false) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = err ? "err show" : "show";
+  setTimeout(() => el.className = err ? "err" : "", 3200);
+}
+
+function ScoreBar({ score=0 }) {
+  const c = score>=9?"var(--rd)":score>=7?"var(--or)":score>=4?"var(--yw)":"var(--ac2)";
+  return <div className="score-b">
+    <span style={{color:c,minWidth:26}}>{score.toFixed?score.toFixed(1):score}</span>
+    <div className="st-"><div className="sf" style={{width:`${Math.min(score*10,100)}%`,background:c}}/></div>
+  </div>;
+}
+
+function Status({ status }) {
+  const m = {
+    new:["st-new","NOUVEAU"], analyzing:["st-analyzing","ANALYSE"],
+    dispatched:["st-dispatched","ENVOYÉ"], running:["st-running","EN COURS"],
+    patched:["st-patched","CORRIGÉ"], failed:["st-failed","ÉCHEC"],
+  };
+  const [cls,lbl] = m[status]||["st-new",(status||"").toUpperCase()];
+  return <div className={`st ${cls}`}><div className="sd"/><span>{lbl}</span></div>;
+}
+
+// ── APP ─────────────────────────────────────────────
+function App() {
+  const [cves,    setCves]    = useState([]);
+  const [jobs,    setJobs]    = useState([]);
+  const [hosts,   setHosts]   = useState({});
+  const [summary, setSummary] = useState({total:0,critical:0,high:0,medium:0,affected:0,patched:0});
+  const [tab,     setTab]     = useState("ALL");
+  const [sel,     setSel]     = useState(null);
+  const [apiOk,   setApiOk]   = useState(null);
+  const [testOpen,setTestOpen]= useState(false);
+
+  // Test form state
+  const [cveInput, setCveInput] = useState("");
+  const [autoFix,  setAutoFix]  = useState(true);
+  const [force,    setForce]    = useState(false);
+  const [injecting,setInjecting]= useState(false);
+  const [injectResult, setInjectResult] = useState(null);
+  const [testLogs, setTestLogs] = useState([]);
+
+  // Batch
+  const [batchInput, setBatchInput] = useState("");
+  const [batching,   setBatching]   = useState(false);
+  const [batchResult,setBatchResult]= useState(null);
+
+  const seen = useRef(new Set());
+  const logRef = useRef(null);
+
+  // ── FETCH ──────────────────────────────────────────
+  const fetchAll = useCallback(async () => {
+    try {
+      const [rw, rj, rh, rl] = await Promise.all([
+        fetch(`${API}/api/warn`),
+        fetch(`${API}/api/jobs`),
+        fetch(`${API}/api/hosts`),
+        fetch(`${API}/api/test/log`),
+      ]);
+      if (rw.ok) { const d=await rw.json(); if(d.ok){setCves(d.cves||[]);setSummary(d.summary||{});setApiOk(true);}}
+      if (rj.ok) { const d=await rj.json(); if(d.ok) setJobs(d.jobs||[]);}
+      if (rh.ok) { const d=await rh.json(); if(d.ok) setHosts(d.hosts||{});}
+      if (rl.ok) { const d=await rl.json(); if(d.ok) setTestLogs(d.log||[]);}
+    } catch { setApiOk(false); }
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+    const iv = setInterval(fetchAll, 4000);
+    return () => clearInterval(iv);
+  }, [fetchAll]);
+
+  useEffect(() => { if(logRef.current) logRef.current.scrollTop=logRef.current.scrollHeight; }, [testLogs]);
+
+  // ── INJECT SINGLE ──────────────────────────────────
+  const doInject = useCallback(async () => {
+    const cid = cveInput.trim().toUpperCase();
+    if (!cid) { toast("Entrez un CVE ID", true); return; }
+    setInjecting(true);
+    setInjectResult(null);
+    try {
+      const r = await fetch(`${API}/api/test/inject`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ cve_id:cid, auto_fix:autoFix, force }),
+      });
+      const d = await r.json();
+      setInjectResult(d);
+      if (d.ok) {
+        toast(`✓ ${cid} injecté — ${d.summary?.hosts_hit||0} host(s) affecté(s)`);
+        setTimeout(fetchAll, 1000);
+      } else {
+        toast(d.error || "Injection échouée", true);
+      }
+    } catch(e) {
+      setInjectResult({ ok:false, error: e.message });
+      toast("Erreur réseau — Flask démarré?", true);
+    }
+    setInjecting(false);
+  }, [cveInput, autoFix, force, fetchAll]);
+
+  // ── INJECT BATCH ───────────────────────────────────
+  const doBatch = useCallback(async () => {
+    const ids = batchInput.split(/[\n,\s]+/).map(s=>s.trim().toUpperCase()).filter(s=>s.startsWith("CVE-"));
+    if (!ids.length) { toast("Aucun CVE valide dans la liste", true); return; }
+    if (ids.length > 10) { toast("Maximum 10 CVE par batch", true); return; }
+    setBatching(true); setBatchResult(null);
+    try {
+      const r = await fetch(`${API}/api/test/inject/batch`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ cve_ids:ids, auto_fix:autoFix }),
+      });
+      const d = await r.json();
+      setBatchResult(d);
+      if (d.ok) { toast(`Batch: ${d.success}/${d.total} injectés`); setTimeout(fetchAll, 1500); }
+    } catch(e) { toast("Batch échoué: "+e.message, true); }
+    setBatching(false);
+  }, [batchInput, autoFix, fetchAll]);
+
+  // ── MANUAL FIX ────────────────────────────────────
+  const triggerFix = useCallback(async (cveId) => {
+    const r = await fetch(`${API}/api/auto_fix`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({cve_id:cveId}),
+    });
+    const d = await r.json();
+    if (d.ok) { toast(`Jobs lancés pour ${cveId}`); setSel(null); setTimeout(fetchAll,800); }
+    else toast(d.error||"Erreur", true);
+  }, [fetchAll]);
+
+  // ── FILTER ────────────────────────────────────────
+  const visible = cves.filter(c => {
+    if (tab==="CRITICAL") return c.severity==="CRITICAL";
+    if (tab==="HIGH")     return c.severity==="HIGH";
+    if (tab==="AFFECTED") return c.affected_hosts?.length>0;
+    if (tab==="PATCHED")  return c.status==="patched";
+    if (tab==="INJECTED") return c.inject_source?.startsWith("TEST");
+    return true;
+  });
+
+  const selCve = sel ? cves.find(c=>c.id===sel) : null;
+  const injectedCount = cves.filter(c=>c.inject_source?.startsWith("TEST")).length;
+
+  return (
+    <>
+    <div className="bar">
+      <div className="logo"><div className="hex">⬡</div>BANKSHIELD</div>
+      <div className="bar-pills">
+        <div className={`pill ${apiOk===null?"p-nvd":apiOk?"p-live":"p-err"}`}>
+          <div className="blink"/>
+          {apiOk===null?"INIT...":apiOk?"FLASK OK":"OFFLINE"}
+        </div>
+        <div className="pill p-nvd"><div className="blink" style={{background:"var(--ac)"}}/>NVD LIVE</div>
+        <div
+          className={`pill p-test ${testOpen?"on":""}`}
+          onClick={()=>setTestOpen(o=>!o)}
+        >
+          🧪 TEST INJECT {testOpen?"▶":"◀"}
+        </div>
+      </div>
+      <div className="clock">{new Date().toLocaleTimeString("fr-FR",{hour12:false})}</div>
+    </div>
+
+    <div className="body">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <div className="sl">Filtres</div>
+        {[
+          ["⬡","Tous","ALL",cves.length,"nb-b"],
+          ["🔴","Critiques","CRITICAL",summary.critical,"nb-r"],
+          ["🟠","Hautes","HIGH",summary.high,"nb-r"],
+          ["🎯","Infra affectée","AFFECTED",summary.affected,"nb-r"],
+          ["🧪","Injectés (test)","INJECTED",injectedCount,"nb-p"],
+          ["✅","Corrigés","PATCHED",summary.patched,"nb-g"],
+        ].map(([ic,lbl,f,cnt,bc])=>(
+          <div key={f} className={`nav ${tab===f?"on":""}`} onClick={()=>setTab(f)}>
+            <span>{ic}</span>{lbl}
+            {cnt>0&&<span className={`nbadge ${bc}`}>{cnt}</span>}
+          </div>
+        ))}
+
+        <div className="sl" style={{marginTop:8}}>Hosts surveillés</div>
+        {Object.entries(hosts).map(([id,h])=>(
+          <div key={id} className="host" title={`${h.host} — ${h.os}`}>
+            <div className={`hd hd-${h.status==="critical"?"c":h.status==="warning"?"w":"ok"}`}/>
+            <div className="hname">{h.name?.split(" ").slice(0,3).join(" ")}</div>
+            {h.cve_count>0&&<div className="hcnt">{h.cve_count}</div>}
+          </div>
+        ))}
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <div className="content">
+        {/* KPIs */}
+        <div className="kpis">
+          {[
+            ["k-total","Total CVE",cves.length,"NVD aujourd'hui"],
+            ["k-crit","Critiques",summary.critical,"score ≥ 9.0"],
+            ["k-high","Hautes",summary.high,"score ≥ 7.0"],
+            ["k-med","Moyennes",summary.medium,"score ≥ 4.0"],
+            ["k-aff","Hosts affectés",summary.affected,"CPE match"],
+            ["k-fix","Corrigés auto",summary.patched,"via agent"],
+          ].map(([cls,lbl,val,sub])=>(
+            <div key={cls} className={`kpi ${cls}`}>
+              <div className="kl">{lbl}</div>
+              <div className="kv">{val??0}</div>
+              <div className="ks">{sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* TABLE + JOBS */}
+        <div className="main-grid">
+          <div className="panel">
+            <div className="ph">
+              <div className="pt">◈ CVE FEED — {visible.length}</div>
+              <div className="pctrl">
+                {[["ALL","TOUS"],["CRITICAL","CRIT"],["HIGH","HIGH"],["AFFECTED","AFFECTÉS"],["INJECTED","INJECTÉS"],["PATCHED","CORRIGÉ"]].map(([f,l])=>(
+                  <button key={f} className={`btn btn-f ${tab===f?"on":""}`} onClick={()=>setTab(f)}>{l}</button>
+                ))}
+              </div>
+            </div>
+            <div className="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>CVE ID</th><th>Sév.</th><th>Score</th>
+                  <th>Hosts</th><th>Statut</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                  {visible.length===0&&(
+                    <tr><td colSpan={6} style={{padding:20,textAlign:"center",color:"var(--t3)",fontSize:9}}>
+                      Aucune donnée — utilisez le panel TEST INJECT →
+                    </td></tr>
+                  )}
+                  {visible.map(c=>(
+                    <tr key={c.id}
+                      className={`tr ${c.status==="patched"?"done":""} ${c.inject_source?.startsWith("TEST")?"injected":""}`}
+                      onClick={()=>setSel(c.id)}>
+                      <td>
+                        <span className="cid">{c.id}</span>
+                        <span className={`src-badge ${c.inject_source?.startsWith("TEST")?"src-test":"src-poll"}`}>
+                          {c.inject_source?.startsWith("TEST")?"TEST":"NVD"}
+                        </span>
+                      </td>
+                      <td><span className={`sev s${c.severity}`}>{c.severity}</span></td>
+                      <td><ScoreBar score={c.score||0}/></td>
+                      <td>
+                        {c.affected_hosts?.length>0
+                          ?c.affected_hosts.map(h=><span key={h} className="htag">⬡{h.replace("srv-","").replace("-01","")}</span>)
+                          :<span className="htag htag-none">—</span>}
+                      </td>
+                      <td><Status status={c.status}/></td>
+                      <td onClick={e=>e.stopPropagation()}>
+                        {c.status==="patched"
+                          ?<button className="btn btn-done">✓</button>
+                          :c.affected_hosts?.length>0
+                            ?<button className="btn btn-g" onClick={()=>triggerFix(c.id)}>⚡ FIX</button>
+                            :<button className="btn" onClick={()=>setSel(c.id)}>→</button>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* JOBS */}
+          <div className="panel">
+            <div className="ph">
+              <div className="pt">⚙ JOBS AGENT</div>
+              <span style={{fontSize:8,color:"var(--t3)"}}>{jobs.length}</span>
+            </div>
+            <div style={{overflowY:"auto",flex:1}}>
+              {jobs.length===0&&(
+                <div style={{padding:16,textAlign:"center",fontSize:9,color:"var(--t3)"}}>
+                  Aucun job encore
+                </div>
+              )}
+              {jobs.map(j=>(
+                <div key={j.job_id} className="job">
+                  <div className="jh">
+                    <span><span className="jid">JOB-{j.job_id}</span>
+                      <span className={`jsrc ${j.source?.startsWith("TEST")?"jsrc-test":"jsrc-manual"}`}>
+                        {j.source||"NVD"}
+                      </span>
+                    </span>
+                    <Status status={j.status}/>
+                  </div>
+                  <div className="jcve">{j.cve_id}</div>
+                  <div className="jhost">{j.host_name} · {j.host_ip}</div>
+                  {j.log?.length>0&&<div className="jlog">{j.log.slice(-4).join("\n")}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* ── TEST INJECT PANEL ── */}
+    <div className={`test-panel ${testOpen?"open":""}`}>
+      <div className="tp-hdr">
+        <div className="tp-title">🧪 TEST INJECT CONSOLE</div>
+        <button className="btn" onClick={()=>setTestOpen(false)}>✕</button>
+      </div>
+      <div className="tp-body">
+
+        {/* SINGLE INJECT */}
+        <div className="inj-form">
+          <div className="inj-title">◈ Injection CVE unique</div>
+
+          <div className="field">
+            <label>CVE ID</label>
+            <input
+              value={cveInput}
+              onChange={e=>setCveInput(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&doInject()}
+              placeholder="CVE-2024-12345"
+            />
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
+            {[["Auto-fix (dispatch si CRITICAL/HIGH)",autoFix,setAutoFix],
+              ["Force re-injection si déjà connu",force,setForce]].map(([lbl,val,set])=>(
+              <div key={lbl} className="toggle-row">
+                <span>{lbl}</span>
+                <label className="tgl">
+                  <input type="checkbox" checked={val} onChange={e=>set(e.target.checked)}/>
+                  <div className="tgl-track"/><div className="tgl-thumb"/>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <button
+            className={`inject-btn ${injecting?"loading":""}`}
+            onClick={doInject} disabled={injecting}
+          >
+            {injecting ? "⟳  RÉCUPÉRATION NVD + PIPELINE..." : "⚡  INJECTER & DÉCLENCHER"}
+          </button>
+        </div>
+
+        {/* INJECT RESULT */}
+        {injectResult && (
+          <div className={`result-box ${injectResult.ok?"ok":"err"}`}>
+            <div className="result-hdr">
+              {injectResult.ok ? `✓ ${injectResult.cve_id} — Pipeline terminé` : `✗ ${injectResult.error||"Erreur"}`}
+            </div>
+            <div className="result-body">
+              {injectResult.ok && (
+                <>
+                  {[
+                    ["1_nvd_fetch",   "NVD Fetch",    "📡"],
+                    ["2_cpe_match",   "CPE Matching", "🔍"],
+                    ["3_auto_patch",  "Auto-Patch",   "🛡"],
+                  ].map(([key,lbl,ic])=>{
+                    const s = injectResult.steps?.[key];
+                    if (!s) return null;
+                    return (
+                      <div key={key} className="step-row">
+                        <div className="step-icon">{s.ok?"✅":"❌"}</div>
+                        <div className="step-info">
+                          <div className="step-label">{lbl}</div>
+                          <div className="step-detail">
+                            {key==="1_nvd_fetch" && s.ok && `Score ${s.score} · ${s.cpes} CPE · ${s.refs} refs`}
+                            {key==="2_cpe_match" && `${s.match_count}/${s.total_hosts} hosts affectés`}
+                            {key==="2_cpe_match" && s.matched_hosts?.length>0 && (
+                              <div className="step-sub">{s.matched_hosts.join(", ")}</div>
+                            )}
+                            {key==="3_auto_patch" && s.skipped && "auto_fix=false — skipped"}
+                            {key==="3_auto_patch" && !s.skipped && `${s.job_count} job(s) créé(s)`}
+                            {key==="3_auto_patch" && !s.skipped && <div className="step-sub">{s.reason}</div>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+              {!injectResult.ok && injectResult.tips && (
+                <div style={{fontSize:9,color:"var(--t2)",lineHeight:1.7}}>
+                  {injectResult.tips.map((t,i)=><div key={i}>• {t}</div>)}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* QUICK CVEs */}
+        <div>
+          <div style={{fontSize:8,letterSpacing:"1.5px",color:"var(--t3)",textTransform:"uppercase",marginBottom:7,fontFamily:"var(--head)"}}>
+            CVE Célèbres — Cliquez pour injecter
+          </div>
+          <div className="quick-grid">
+            {QUICK_CVES.map(q=>(
+              <div key={q.id} className="quick-cve"
+                onClick={()=>{ setCveInput(q.id); }}>
+                <div className="qid">{q.id}</div>
+                <div className="qsev">
+                  <span className={`sev s${q.sev}`}>{q.sev}</span>
+                  <span style={{color:"var(--t3)",marginLeft:5}}>{q.score}</span>
+                </div>
+                <div style={{fontSize:7,color:"var(--t2)",marginTop:2}}>{q.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* BATCH */}
+        <div className="inj-form" style={{borderColor:"var(--ac3)"}}>
+          <div className="inj-title" style={{color:"var(--ac)"}}>◈ Injection batch (multi-CVE)</div>
+          <div className="field">
+            <label>CVE IDs (un par ligne ou séparés par virgule)</label>
+            <textarea
+              className="batch-area"
+              value={batchInput}
+              onChange={e=>setBatchInput(e.target.value)}
+              placeholder={"CVE-2021-44228\nCVE-2022-22965\nCVE-2023-44487"}
+            />
+          </div>
+          <button className={`inject-btn ${batching?"loading":""}`}
+            onClick={doBatch} disabled={batching}
+            style={{background:"linear-gradient(135deg,var(--ac3),var(--ac2))"}}>
+            {batching?"⟳  BATCH EN COURS...":"⚡  INJECTER BATCH"}
+          </button>
+          {batchResult && (
+            <div style={{marginTop:10,padding:9,background:"var(--bg4)",borderRadius:3,fontSize:9}}>
+              <div style={{color:batchResult.success>0?"var(--gr)":"var(--rd)",marginBottom:5,fontFamily:"var(--head)"}}>
+                Batch: {batchResult.success}/{batchResult.total} OK · {batchResult.errors} erreurs
+              </div>
+              {Object.entries(batchResult.results||{}).map(([id,r])=>(
+                <div key={id} style={{color:"var(--t2)",marginBottom:2}}>
+                  ✓ {id} — <span className={`sev s${r.severity}`}>{r.severity}</span> · {r.hosts?.length||0} hosts
+                </div>
+              ))}
+              {Object.entries(batchResult.failed||{}).map(([id,e])=>(
+                <div key={id} style={{color:"var(--rd)",marginBottom:2}}>✗ {id} — {e}</div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* TEST LOG */}
+        <div className="tlog">
+          <div className="tlog-hdr">
+            <span>PIPELINE LOG</span>
+            <span style={{color:"var(--t3)"}}>{testLogs.length} entrées</span>
+          </div>
+          <div className="tlog-body" ref={logRef}>
+            {testLogs.length===0&&<div className="ll-d">En attente d'injections...</div>}
+            {testLogs.map((l,i)=>(
+              <div key={i} className={`ll-${l.level==="success"?"s":l.level==="error"?"e":l.level==="warn"?"w":"i"}`}>
+                <span style={{color:"var(--t4)",marginRight:6}}>
+                  {new Date(l.ts).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+                </span>
+                {l.msg}
+              </div>
+            ))}
+            <div className="ll-i"><span className="cursor"/></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {/* MODAL CVE DETAIL */}
+    {selCve&&(
+      <div className="ov open" onClick={()=>setSel(null)}>
+        <div className="modal" onClick={e=>e.stopPropagation()}>
+          <div className="mh">
+            <div className="mtit">
+              {selCve.id}
+              {selCve.inject_source?.startsWith("TEST")&&
+                <span className="src-badge src-test" style={{marginLeft:8}}>TEST INJECT</span>}
+            </div>
+            <button className="btn" onClick={()=>setSel(null)}>✕</button>
+          </div>
+          <div className="mb">
+            {selCve.status==="patched"&&(
+              <div style={{display:"flex",alignItems:"center",gap:7,
+                background:"rgba(0,148,72,.07)",border:"1px solid var(--gr2)",
+                borderRadius:3,padding:"10px 13px",marginBottom:12,fontSize:9,color:"var(--gr)"}}>
+                ✅ Corrigé — {new Date(selCve.patched_at||Date.now()).toLocaleTimeString("fr-FR")}
+              </div>
+            )}
+            <div className="dg">
+              {[
+                ["Sévérité",<span className={`sev s${selCve.severity}`}>{selCve.severity}</span>],
+                ["CVSS",<span style={{fontFamily:"var(--head)",fontSize:20,color:SEV_COLOR[selCve.severity]}}>{selCve.score?.toFixed(1)}</span>],
+                ["Statut",<Status status={selCve.status}/>],
+                ["Source",<span style={{fontSize:9,color:"var(--pu)"}}>{selCve.inject_source||"NVD-POLL"}</span>],
+                ["Publié",<span style={{fontSize:9}}>{new Date(selCve.published).toLocaleString("fr-FR")}</span>],
+                ["Vecteur",<span style={{fontSize:8,wordBreak:"break-all"}}>{selCve.vector||"—"}</span>],
+              ].map(([l,v],i)=>(
+                <div key={i} className="di"><div className="dil">{l}</div><div style={{marginTop:3}}>{v}</div></div>
+              ))}
+            </div>
+            <div className="di" style={{marginBottom:12}}>
+              <div className="dil">Hosts bancaires affectés</div>
+              <div style={{marginTop:5}}>
+                {selCve.affected_hosts?.length>0
+                  ?selCve.affected_hosts.map(h=>{
+                    const hi=hosts[h];
+                    return <span key={h} className="htag">⬡ {h} {hi?`(${hi.os?.split(" ")[0]})`:""}</span>;
+                  })
+                  :<span style={{fontSize:9,color:"var(--t3)"}}>Aucun host affecté</span>}
+              </div>
+            </div>
+            {selCve.cpes?.length>0&&(
+              <div style={{marginBottom:12}}>
+                <div className="dil">CPE NVD ({selCve.cpes.length})</div>
+                <div style={{marginTop:5}}>{selCve.cpes.slice(0,6).map((c,i)=><span key={i} className="cpe">{c.slice(0,55)}</span>)}</div>
+              </div>
+            )}
+            <div className="desc">{selCve.description}</div>
+            {selCve.references?.length>0&&(
+              <div style={{marginBottom:12}}>
+                <div className="dil" style={{marginBottom:5}}>Références</div>
+                {selCve.references.map((r,i)=><a key={i} href={r} target="_blank" className="ref">{r}</a>)}
+              </div>
+            )}
+            {selCve.affected_hosts?.length>0&&selCve.status!=="patched"&&(
+              <div className="fix-ban">
+                <div style={{fontSize:18}}>🛡</div>
+                <div>
+                  <div style={{fontWeight:600,marginBottom:2,fontFamily:"var(--head)",fontSize:11}}>Correction automatique</div>
+                  <div style={{fontSize:9,color:"var(--t2)"}}>Dispatch vers {selCve.affected_hosts.length} agent(s)</div>
+                </div>
+                <button className="fix-btn" onClick={()=>triggerFix(selCve.id)}>⚡ CORRIGER</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
