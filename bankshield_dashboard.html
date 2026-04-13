@@ -2,12 +2,13 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>BankShield — CVE Dashboard + Test Console</title>
+<title>BankShield CTI — MITRE ATT&CK (toujours visible)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ========== STYLES (identiques à votre version) ========== */
 :root{
   --bg:#04070c;--bg2:#070d16;--bg3:#0c1520;--bg4:#101c2b;
   --b1:#152030;--b2:#1c2e44;--b3:#274060;
@@ -34,10 +35,7 @@ body::before{content:'';position:fixed;inset:0;
   background-image:linear-gradient(rgba(0,216,255,.03) 1px,transparent 1px),
     linear-gradient(90deg,rgba(0,216,255,.03) 1px,transparent 1px);
   background-size:36px 36px}
-
 .app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
-
-/* ── TOP BAR ── */
 .bar{
   display:flex;align-items:center;justify-content:space-between;
   padding:0 22px;height:50px;flex-shrink:0;
@@ -59,11 +57,7 @@ body::before{content:'';position:fixed;inset:0;
 .blink{width:6px;height:6px;border-radius:50%;background:currentColor;animation:bl 1s ease-in-out infinite}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.15}}
 .clock{font-size:11px;color:var(--ac);letter-spacing:1px;font-family:var(--mono)}
-
-/* ── LAYOUT ── */
 .body{display:flex;flex:1;overflow:hidden}
-
-/* ── SIDEBAR ── */
 .sidebar{width:210px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--b1);
   display:flex;flex-direction:column;overflow-y:auto;padding-bottom:12px}
 .sl{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);
@@ -84,11 +78,7 @@ body::before{content:'';position:fixed;inset:0;
 .hd-c{background:var(--rd);animation:bl .7s infinite}
 .hname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hcnt{color:var(--rd);font-weight:700;font-size:9px}
-
-/* ── CONTENT ── */
 .content{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
-
-/* KPIs */
 .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;flex-shrink:0}
 .kpi{background:var(--bg2);border:1px solid var(--b1);border-radius:5px;padding:13px;position:relative;overflow:hidden}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -107,18 +97,40 @@ body::before{content:'';position:fixed;inset:0;
 .k-aff .kv{color:var(--pu)}
 .k-fix .kv{color:var(--gr)}
 .ks{font-size:8px;color:var(--t3);margin-top:3px}
-
-/* MAIN GRID */
+.kpis-cti{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:5px}
+.kpi-cti{background:rgba(7,13,22,.8);border:1px solid var(--pu2);border-radius:5px;padding:10px}
+.kpi-cti .kl{color:var(--pu)}
+.kpi-cti .kv{font-size:20px;color:var(--pu)}
+.compliance-section {
+  background: rgba(7,13,22,.8);
+  border: 1px solid var(--gr2);
+  border-radius: 5px;
+  padding: 12px 16px;
+  margin-top: 5px;
+}
+.compliance-section h2 {
+  font-family: var(--head);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gr);
+  margin-bottom: 10px;
+}
+.compliance-section p {
+  font-size: 10px;
+  margin: 5px 0;
+  font-family: var(--mono);
+  color: var(--t2);
+}
+.compliance-section p strong {
+  color: var(--t1);
+}
 .main-grid{display:grid;grid-template-columns:1fr 310px;gap:12px;flex:1;min-height:0}
-
-/* PANEL */
 .panel{background:var(--bg2);border:1px solid var(--b1);border-radius:5px;overflow:hidden;display:flex;flex-direction:column}
 .ph{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
   border-bottom:1px solid var(--b1);background:rgba(255,255,255,.01);flex-shrink:0}
 .pt{font-family:var(--head);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);display:flex;align-items:center;gap:6px}
 .pctrl{display:flex;gap:4px}
-
-/* TABLE */
 .tbl-wrap{overflow-y:auto;flex:1}
 table{width:100%;border-collapse:collapse}
 th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
@@ -160,8 +172,6 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .score-b{display:flex;align-items:center;gap:5px;font-size:9px}
 .st-{width:36px;height:3px;background:var(--b2);border-radius:1px;overflow:hidden}
 .sf{height:100%;border-radius:1px}
-
-/* BUTTONS */
 .btn{background:none;border:1px solid var(--b2);color:var(--t2);padding:2px 8px;
   border-radius:2px;font-family:var(--mono);font-size:8px;cursor:pointer;transition:all .12s}
 .btn:hover{border-color:var(--ac2);color:var(--ac)}
@@ -170,8 +180,8 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .btn-done{border-color:var(--b1);color:var(--t4);cursor:default;pointer-events:none}
 .btn-f{padding:3px 9px;font-size:8px}
 .btn-f.on{background:rgba(0,216,255,.08);border-color:var(--ac2);color:var(--ac)}
-
-/* ── TEST PANEL ── */
+.btn-cti{border-color:var(--pu2);color:var(--pu);background:rgba(153,96,255,.05);margin-left:8px}
+.btn-cti:hover{background:rgba(153,96,255,.15)}
 .test-panel{
   position:fixed;top:50px;right:0;bottom:0;width:460px;
   background:var(--bg2);border-left:1px solid var(--pu2);
@@ -184,8 +194,6 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
   background:rgba(153,96,255,.06);flex-shrink:0}
 .tp-title{font-family:var(--head);font-size:12px;font-weight:700;color:var(--pu);letter-spacing:.5px}
 .tp-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
-
-/* INJECT FORM */
 .inj-form{background:var(--bg3);border:1px solid var(--pu2);border-radius:5px;padding:14px}
 .inj-title{font-family:var(--head);font-size:10px;font-weight:700;color:var(--pu);
   margin-bottom:12px;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
@@ -209,7 +217,6 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .tgl-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;
   border-radius:50%;transition:transform .2s}
 .tgl input:checked ~ .tgl-thumb{transform:translateX(14px)}
-
 .inject-btn{
   width:100%;padding:11px;border-radius:4px;
   background:linear-gradient(135deg,var(--pu2),var(--pu));
@@ -225,8 +232,6 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
   animation:shimmer 1.2s infinite;
 }
 @keyframes shimmer{to{left:100%}}
-
-/* INJECT RESULT */
 .result-box{border-radius:4px;overflow:hidden;border:1px solid}
 .result-box.ok{border-color:var(--gr2)}
 .result-box.err{border-color:var(--rd2)}
@@ -241,23 +246,17 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .step-label{color:var(--t2);margin-bottom:2px;font-family:var(--head);font-size:8px;letter-spacing:1px;text-transform:uppercase}
 .step-detail{color:var(--t1);line-height:1.5}
 .step-sub{color:var(--t3);font-size:8px;margin-top:2px}
-
-/* BATCH INJECT */
 .batch-area{background:var(--bg3);border:1px solid var(--b2);border-radius:3px;
   padding:8px 10px;font-size:10px;min-height:72px;width:100%;color:var(--t1);
   font-family:var(--mono);outline:none;resize:vertical;line-height:1.6}
 .batch-area::placeholder{color:var(--t4)}
 .batch-area:focus{border-color:var(--pu)}
-
-/* QUICK CVEs */
 .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .quick-cve{background:var(--bg4);border:1px solid var(--b1);border-radius:3px;
   padding:6px 9px;cursor:pointer;transition:all .15s;font-size:9px}
 .quick-cve:hover{border-color:var(--pu2);background:rgba(153,96,255,.07)}
 .qid{color:var(--pu);font-size:9px;margin-bottom:2px}
 .qsev{font-size:7px}
-
-/* TEST LOG */
 .tlog{background:#020508;border:1px solid var(--b1);border-radius:4px;overflow:hidden}
 .tlog-hdr{padding:7px 12px;background:rgba(153,96,255,.05);border-bottom:1px solid var(--b1);
   font-family:var(--head);font-size:8px;letter-spacing:1.5px;color:var(--pu);display:flex;align-items:center;justify-content:space-between}
@@ -269,8 +268,6 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .ll-d{color:var(--t4)}
 .cursor{display:inline-block;width:6px;height:10px;background:var(--pu);animation:cur 1s step-end infinite;vertical-align:-1px}
 @keyframes cur{50%{opacity:0}}
-
-/* JOBS SIDE */
 .job{margin:4px 8px;padding:8px 10px;background:var(--bg3);border:1px solid var(--b1);
   border-radius:3px;font-size:10px;cursor:pointer;transition:border-color .15s}
 .job:hover{border-color:var(--b2)}
@@ -283,13 +280,11 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .jhost{color:var(--t3);font-size:8px}
 .jlog{font-size:8px;color:var(--t4);margin-top:4px;padding:4px 6px;
   background:rgba(0,0,0,.4);border-radius:2px;max-height:55px;overflow-y:auto;line-height:1.7;white-space:pre-line}
-
-/* MODAL */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;
   align-items:center;justify-content:center}
 .ov.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:7px;
-  width:560px;max-width:94vw;max-height:86vh;overflow-y:auto}
+  width:620px;max-width:94vw;max-height:86vh;overflow-y:auto}
 .mh{display:flex;align-items:center;justify-content:space-between;
   padding:15px 19px;border-bottom:1px solid var(--b1)}
 .mtit{font-family:var(--head);font-size:13px;font-weight:700;color:var(--ac)}
@@ -311,14 +306,13 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 .ref{color:var(--ac2);font-size:8px;display:block;margin-bottom:3px;
   text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ref:hover{color:var(--ac)}
-
-/* TOAST */
+.mitre-chip{display:inline-block;background:rgba(153,96,255,.1);border:1px solid var(--pu2);
+  padding:2px 8px;border-radius:12px;font-size:8px;margin:2px;font-family:var(--mono);color:var(--pu)}
 #toast{position:fixed;bottom:22px;right:22px;padding:9px 16px;border-radius:3px;z-index:999;
   font-size:9px;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;
   border:1px solid var(--gr2);color:var(--gr);background:var(--bg3)}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.err{border-color:var(--rd2);color:var(--rd)}
-
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
@@ -333,20 +327,14 @@ th{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
 const { useState, useEffect, useCallback, useRef } = React;
 const API = "http://localhost:5000";
 
-// ── QUICK CVEs ──────────────────────────────────────
 const QUICK_CVES = [
   { id:"CVE-2021-44228", label:"Log4Shell",      sev:"CRITICAL", score:10.0 },
-  { id:"CVE-2021-45046", label:"Log4Shell v2",   sev:"CRITICAL", score:9.0  },
   { id:"CVE-2022-22965", label:"Spring4Shell",   sev:"CRITICAL", score:9.8  },
+  { id:"CVE-2021-41773", label:"Apache Path Trav",sev:"HIGH",    score:7.5  },
   { id:"CVE-2023-44487", label:"HTTP/2 Rapid",   sev:"HIGH",     score:7.5  },
   { id:"CVE-2024-3400",  label:"PAN-OS RCE",     sev:"CRITICAL", score:10.0 },
   { id:"CVE-2023-46604", label:"ActiveMQ RCE",   sev:"CRITICAL", score:10.0 },
-  { id:"CVE-2023-4911",  label:"Looney Tunables",sev:"HIGH",     score:7.8  },
-  { id:"CVE-2024-1709",  label:"ConnectWise",    sev:"CRITICAL", score:10.0 },
 ];
-
-// ── UTILS ───────────────────────────────────────────
-const SEV_COLOR = {CRITICAL:"var(--rd)",HIGH:"var(--or)",MEDIUM:"var(--yw)",LOW:"var(--ac2)",UNKNOWN:"var(--t3)"};
 
 function toast(msg, err=false) {
   const el = document.getElementById("toast");
@@ -373,46 +361,44 @@ function Status({ status }) {
   return <div className={`st ${cls}`}><div className="sd"/><span>{lbl}</span></div>;
 }
 
-// ── APP ─────────────────────────────────────────────
 function App() {
   const [cves,    setCves]    = useState([]);
   const [jobs,    setJobs]    = useState([]);
   const [hosts,   setHosts]   = useState({});
   const [summary, setSummary] = useState({total:0,critical:0,high:0,medium:0,affected:0,patched:0});
+  const [ctiKpis, setCtiKpis] = useState({mttd_hours:0,mttr_hours:0,kev_coverage_percent:0,enrichment_ratio_percent:0});
+  const [compliance, setCompliance] = useState({});
   const [tab,     setTab]     = useState("ALL");
   const [sel,     setSel]     = useState(null);
   const [apiOk,   setApiOk]   = useState(null);
   const [testOpen,setTestOpen]= useState(false);
 
-  // Test form state
   const [cveInput, setCveInput] = useState("");
-  const [autoFix,  setAutoFix]  = useState(true);
   const [force,    setForce]    = useState(false);
   const [injecting,setInjecting]= useState(false);
   const [injectResult, setInjectResult] = useState(null);
   const [testLogs, setTestLogs] = useState([]);
-
-  // Batch
   const [batchInput, setBatchInput] = useState("");
   const [batching,   setBatching]   = useState(false);
   const [batchResult,setBatchResult]= useState(null);
-
-  const seen = useRef(new Set());
   const logRef = useRef(null);
 
-  // ── FETCH ──────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     try {
-      const [rw, rj, rh, rl] = await Promise.all([
+      const [rw, rj, rh, rl, rk, rc] = await Promise.all([
         fetch(`${API}/api/warn`),
         fetch(`${API}/api/jobs`),
         fetch(`${API}/api/hosts`),
         fetch(`${API}/api/test/log`),
+        fetch(`${API}/api/cti/kpis`),
+        fetch(`${API}/api/compliance`),
       ]);
       if (rw.ok) { const d=await rw.json(); if(d.ok){setCves(d.cves||[]);setSummary(d.summary||{});setApiOk(true);}}
       if (rj.ok) { const d=await rj.json(); if(d.ok) setJobs(d.jobs||[]);}
       if (rh.ok) { const d=await rh.json(); if(d.ok) setHosts(d.hosts||{});}
       if (rl.ok) { const d=await rl.json(); if(d.ok) setTestLogs(d.log||[]);}
+      if (rk.ok) { const d=await rk.json(); if(d.ok) setCtiKpis(d.kpis||{});}
+      if (rc.ok) { const d=await rc.json(); if(d.ok) setCompliance(d.compliance||{});}
     } catch { setApiOk(false); }
   }, []);
 
@@ -424,98 +410,103 @@ function App() {
 
   useEffect(() => { if(logRef.current) logRef.current.scrollTop=logRef.current.scrollHeight; }, [testLogs]);
 
-  // ── INJECT SINGLE ──────────────────────────────────
   const doInject = useCallback(async () => {
     const cid = cveInput.trim().toUpperCase();
     if (!cid) { toast("Entrez un CVE ID", true); return; }
     setInjecting(true);
     setInjectResult(null);
     try {
-      const r = await fetch(`${API}/api/test/inject`, {
+      const r = await fetch(`${API}/api/import/cve`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ cve_id:cid, auto_fix:autoFix, force }),
+        body: JSON.stringify({ cve_id: cid, force }),
       });
       const d = await r.json();
       setInjectResult(d);
       if (d.ok) {
-        toast(`✓ ${cid} injecté — ${d.summary?.hosts_hit||0} host(s) affecté(s)`);
+        toast(`✓ ${cid} importé — BSRS: ${d.result?.bsrs_avg || '?'}`);
         setTimeout(fetchAll, 1000);
       } else {
-        toast(d.error || "Injection échouée", true);
+        toast(d.error || "Import échoué", true);
       }
     } catch(e) {
       setInjectResult({ ok:false, error: e.message });
-      toast("Erreur réseau — Flask démarré?", true);
+      toast("Erreur réseau", true);
     }
     setInjecting(false);
-  }, [cveInput, autoFix, force, fetchAll]);
+  }, [cveInput, force, fetchAll]);
 
-  // ── INJECT BATCH ───────────────────────────────────
   const doBatch = useCallback(async () => {
     const ids = batchInput.split(/[\n,\s]+/).map(s=>s.trim().toUpperCase()).filter(s=>s.startsWith("CVE-"));
-    if (!ids.length) { toast("Aucun CVE valide dans la liste", true); return; }
-    if (ids.length > 10) { toast("Maximum 10 CVE par batch", true); return; }
+    if (!ids.length) { toast("Aucun CVE valide", true); return; }
+    if (ids.length > 20) { toast("Maximum 20 CVE", true); return; }
     setBatching(true); setBatchResult(null);
     try {
-      const r = await fetch(`${API}/api/test/inject/batch`, {
+      const r = await fetch(`${API}/api/import/batch`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ cve_ids:ids, auto_fix:autoFix }),
+        body: JSON.stringify({ cve_ids: ids }),
       });
       const d = await r.json();
       setBatchResult(d);
-      if (d.ok) { toast(`Batch: ${d.success}/${d.total} injectés`); setTimeout(fetchAll, 1500); }
+      if (d.ok) { toast(`Batch: ${Object.keys(d.results||{}).length} importés`); setTimeout(fetchAll, 1500); }
     } catch(e) { toast("Batch échoué: "+e.message, true); }
     setBatching(false);
-  }, [batchInput, autoFix, fetchAll]);
+  }, [batchInput, fetchAll]);
 
-  // ── MANUAL FIX ────────────────────────────────────
   const triggerFix = useCallback(async (cveId) => {
     const r = await fetch(`${API}/api/auto_fix`, {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({cve_id:cveId}),
     });
     const d = await r.json();
-    if (d.ok) { toast(`Jobs lancés pour ${cveId}`); setSel(null); setTimeout(fetchAll,800); }
-    else toast(d.error||"Erreur", true);
+    if (d.ok) { 
+      toast(`Jobs lancés pour ${cveId}`); 
+      setSel(null); 
+      fetchAll();
+      const interval = setInterval(fetchAll, 2000);
+      setTimeout(() => clearInterval(interval), 60000);
+    }
   }, [fetchAll]);
 
-  // ── FILTER ────────────────────────────────────────
   const visible = cves.filter(c => {
     if (tab==="CRITICAL") return c.severity==="CRITICAL";
     if (tab==="HIGH")     return c.severity==="HIGH";
     if (tab==="AFFECTED") return c.affected_hosts?.length>0;
     if (tab==="PATCHED")  return c.status==="patched";
-    if (tab==="INJECTED") return c.inject_source?.startsWith("TEST");
+    if (tab==="INJECTED") return c.inject_source?.startsWith("MANUAL") || c.inject_source?.startsWith("TEST");
     return true;
   });
 
   const selCve = sel ? cves.find(c=>c.id===sel) : null;
-  const injectedCount = cves.filter(c=>c.inject_source?.startsWith("TEST")).length;
+  const injectedCount = cves.filter(c=>c.inject_source?.startsWith("MANUAL") || c.inject_source?.startsWith("TEST")).length;
+
+  const getBsrsPriority = (cve) => {
+    if (cve.affected_details && cve.affected_details.length) {
+      const avg = cve.affected_details.reduce((s,d)=>s+d.bsrs,0)/cve.affected_details.length;
+      const prio = cve.affected_details[0].priority;
+      return { bsrs: avg.toFixed(1), priority: prio };
+    }
+    return { bsrs: '—', priority: '' };
+  };
 
   return (
     <>
     <div className="bar">
-      <div className="logo"><div className="hex">⬡</div>BANKSHIELD</div>
+      <div className="logo"><div className="hex">⬡</div>BANKSHIELD CTI v2.0</div>
       <div className="bar-pills">
         <div className={`pill ${apiOk===null?"p-nvd":apiOk?"p-live":"p-err"}`}>
-          <div className="blink"/>
-          {apiOk===null?"INIT...":apiOk?"FLASK OK":"OFFLINE"}
+          <div className="blink"/>{apiOk===null?"INIT...":apiOk?"FLASK OK":"OFFLINE"}
         </div>
-        <div className="pill p-nvd"><div className="blink" style={{background:"var(--ac)"}}/>NVD LIVE</div>
-        <div
-          className={`pill p-test ${testOpen?"on":""}`}
-          onClick={()=>setTestOpen(o=>!o)}
-        >
-          🧪 TEST INJECT {testOpen?"▶":"◀"}
+        <div className="pill p-nvd"><div className="blink" style={{background:"var(--ac)"}}/>MISP+NVD+KEV+EPSS+MITRE</div>
+        <div className={`pill p-test ${testOpen?"on":""}`} onClick={()=>setTestOpen(o=>!o)}>
+          📥 IMPORT CVE {testOpen?"▶":"◀"}
         </div>
       </div>
       <div className="clock">{new Date().toLocaleTimeString("fr-FR",{hour12:false})}</div>
     </div>
 
     <div className="body">
-      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sl">Filtres</div>
         {[
@@ -523,7 +514,7 @@ function App() {
           ["🔴","Critiques","CRITICAL",summary.critical,"nb-r"],
           ["🟠","Hautes","HIGH",summary.high,"nb-r"],
           ["🎯","Infra affectée","AFFECTED",summary.affected,"nb-r"],
-          ["🧪","Injectés (test)","INJECTED",injectedCount,"nb-p"],
+          ["🧪","Importés","INJECTED",injectedCount,"nb-p"],
           ["✅","Corrigés","PATCHED",summary.patched,"nb-g"],
         ].map(([ic,lbl,f,cnt,bc])=>(
           <div key={f} className={`nav ${tab===f?"on":""}`} onClick={()=>setTab(f)}>
@@ -531,7 +522,6 @@ function App() {
             {cnt>0&&<span className={`nbadge ${bc}`}>{cnt}</span>}
           </div>
         ))}
-
         <div className="sl" style={{marginTop:8}}>Hosts surveillés</div>
         {Object.entries(hosts).map(([id,h])=>(
           <div key={id} className="host" title={`${h.host} — ${h.os}`}>
@@ -542,12 +532,10 @@ function App() {
         ))}
       </aside>
 
-      {/* MAIN CONTENT */}
       <div className="content">
-        {/* KPIs */}
         <div className="kpis">
           {[
-            ["k-total","Total CVE",cves.length,"NVD aujourd'hui"],
+            ["k-total","Total CVE",cves.length,"MISP+NVD"],
             ["k-crit","Critiques",summary.critical,"score ≥ 9.0"],
             ["k-high","Hautes",summary.high,"score ≥ 7.0"],
             ["k-med","Moyennes",summary.medium,"score ≥ 4.0"],
@@ -561,86 +549,83 @@ function App() {
             </div>
           ))}
         </div>
+        <div className="kpis-cti">
+          <div className="kpi-cti"><div className="kl">MTTD (heures)</div><div className="kv">{ctiKpis.mttd_hours}</div><div className="ks">détection</div></div>
+          <div className="kpi-cti"><div className="kl">MTTR (heures)</div><div className="kv">{ctiKpis.mttr_hours}</div><div className="ks">correction</div></div>
+          <div className="kpi-cti"><div className="kl">KEV coverage</div><div className="kv">{ctiKpis.kev_coverage_percent}%</div><div className="ks">CVE KEV détectés</div></div>
+          <div className="kpi-cti"><div className="kl">Enrichment ratio</div><div className="kv">{ctiKpis.enrichment_ratio_percent}%</div><div className="ks">≥3 sources</div></div>
+        </div>
+        <div className="compliance-section">
+          <h2>🛡 Compliance Status</h2>
+          {Object.keys(compliance).length === 0 ? (
+            <p>⏳ Chargement...</p>
+          ) : (
+            <>
+              <p><strong>🏛 DORA:</strong> {compliance.DORA?.status === 'active' ? '✅ ACTIVE' : '❌ INACTIVE'} - {compliance.DORA?.rule || ''}</p>
+              <p><strong>📘 ISO 27001:</strong> {compliance.ISO_27001?.status === 'active' ? '✅ ACTIVE' : '❌ INACTIVE'} - {compliance.ISO_27001?.rule || ''}</p>
+              <p><strong>💳 PCI DSS:</strong> {compliance.PCI_DSS?.status === 'active' ? '✅ ACTIVE' : '❌ INACTIVE'} - {compliance.PCI_DSS?.rule || ''}</p>
+              <p><strong>🔐 SWIFT CSP:</strong> {compliance.SWIFT_CSP?.status === 'active' ? '✅ ACTIVE' : '❌ INACTIVE'} - {compliance.SWIFT_CSP?.rule || ''}</p>
+            </>
+          )}
+        </div>
 
-        {/* TABLE + JOBS */}
         <div className="main-grid">
           <div className="panel">
             <div className="ph">
               <div className="pt">◈ CVE FEED — {visible.length}</div>
               <div className="pctrl">
-                {[["ALL","TOUS"],["CRITICAL","CRIT"],["HIGH","HIGH"],["AFFECTED","AFFECTÉS"],["INJECTED","INJECTÉS"],["PATCHED","CORRIGÉ"]].map(([f,l])=>(
+                {[["ALL","TOUS"],["CRITICAL","CRIT"],["HIGH","HIGH"],["AFFECTED","AFFECTÉS"],["INJECTED","IMPORTÉS"],["PATCHED","CORRIGÉ"]].map(([f,l])=>(
                   <button key={f} className={`btn btn-f ${tab===f?"on":""}`} onClick={()=>setTab(f)}>{l}</button>
                 ))}
+                <button className="btn btn-cti" onClick={fetchAll}>⟳ Rafraîchir</button>
               </div>
             </div>
             <div className="tbl-wrap">
               <table>
-                <thead><tr>
-                  <th>CVE ID</th><th>Sév.</th><th>Score</th>
-                  <th>Hosts</th><th>Statut</th><th>Action</th>
-                </tr></thead>
+                <thead>
+                  <tr>
+                    <th>CVE ID</th><th>Sév.</th><th>Score</th><th>Priorité/BSRS</th><th>Hosts</th><th>Statut</th><th>Action</th>
+                  </tr>
+                </thead>
                 <tbody>
-                  {visible.length===0&&(
-                    <tr><td colSpan={6} style={{padding:20,textAlign:"center",color:"var(--t3)",fontSize:9}}>
-                      Aucune donnée — utilisez le panel TEST INJECT →
-                    </td></tr>
-                  )}
-                  {visible.map(c=>(
+                  {visible.length===0&&(<tr><td colSpan={7} style={{padding:20,textAlign:"center",color:"var(--t3)",fontSize:9}}>Aucune donnée — utilisez le panel IMPORT CVE</td></tr>)}
+                  {visible.map(c=>{
+                    const {bsrs, priority} = getBsrsPriority(c);
+                    return (
                     <tr key={c.id}
-                      className={`tr ${c.status==="patched"?"done":""} ${c.inject_source?.startsWith("TEST")?"injected":""}`}
+                      className={`tr ${c.status==="patched"?"done":""} ${c.inject_source?.startsWith("MANUAL")?"injected":""}`}
                       onClick={()=>setSel(c.id)}>
-                      <td>
-                        <span className="cid">{c.id}</span>
-                        <span className={`src-badge ${c.inject_source?.startsWith("TEST")?"src-test":"src-poll"}`}>
-                          {c.inject_source?.startsWith("TEST")?"TEST":"NVD"}
+                      <td><span className="cid">{c.id}</span>
+                        <span className={`src-badge ${c.inject_source?.startsWith("MANUAL")?"src-test":"src-poll"}`}>
+                          {c.inject_source?.startsWith("MANUAL")?"IMPORT":"NVD"}
                         </span>
                       </td>
                       <td><span className={`sev s${c.severity}`}>{c.severity}</span></td>
                       <td><ScoreBar score={c.score||0}/></td>
-                      <td>
-                        {c.affected_hosts?.length>0
-                          ?c.affected_hosts.map(h=><span key={h} className="htag">⬡{h.replace("srv-","").replace("-01","")}</span>)
-                          :<span className="htag htag-none">—</span>}
-                      </td>
+                      <td><div style={{fontWeight:'bold', color: parseFloat(bsrs)>=80?'var(--rd)':parseFloat(bsrs)>=60?'var(--or)':'var(--t2)'}}>{bsrs}</div><div style={{fontSize:'7px'}}>{priority}</div></td>
+                      <td>{c.affected_hosts?.length>0?c.affected_hosts.map(h=><span key={h} className="htag">⬡{h.replace("srv-","").replace("-01","")}</span>):<span className="htag htag-none">—</span>}</td>
                       <td><Status status={c.status}/></td>
                       <td onClick={e=>e.stopPropagation()}>
-                        {c.status==="patched"
-                          ?<button className="btn btn-done">✓</button>
-                          :c.affected_hosts?.length>0
-                            ?<button className="btn btn-g" onClick={()=>triggerFix(c.id)}>⚡ FIX</button>
-                            :<button className="btn" onClick={()=>setSel(c.id)}>→</button>}
+                        {c.status==="patched"?<button className="btn btn-done">✓</button>
+                        :c.status==="dispatched"?<button className="btn btn-done" disabled>⏳ FIXING...</button>
+                        :c.affected_hosts?.length>0?<button className="btn btn-g" onClick={()=>triggerFix(c.id)}>⚡ FIX</button>
+                        :<button className="btn" onClick={()=>setSel(c.id)}>→</button>}
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* JOBS */}
           <div className="panel">
-            <div className="ph">
-              <div className="pt">⚙ JOBS AGENT</div>
-              <span style={{fontSize:8,color:"var(--t3)"}}>{jobs.length}</span>
-            </div>
+            <div className="ph"><div className="pt">⚙ JOBS AGENT</div><span style={{fontSize:8,color:"var(--t3)"}}>{jobs.length}</span></div>
             <div style={{overflowY:"auto",flex:1}}>
-              {jobs.length===0&&(
-                <div style={{padding:16,textAlign:"center",fontSize:9,color:"var(--t3)"}}>
-                  Aucun job encore
-                </div>
-              )}
+              {jobs.length===0&&<div style={{padding:16,textAlign:"center",fontSize:9,color:"var(--t3)"}}>Aucun job encore</div>}
               {jobs.map(j=>(
                 <div key={j.job_id} className="job">
-                  <div className="jh">
-                    <span><span className="jid">JOB-{j.job_id}</span>
-                      <span className={`jsrc ${j.source?.startsWith("TEST")?"jsrc-test":"jsrc-manual"}`}>
-                        {j.source||"NVD"}
-                      </span>
-                    </span>
-                    <Status status={j.status}/>
-                  </div>
-                  <div className="jcve">{j.cve_id}</div>
-                  <div className="jhost">{j.host_name} · {j.host_ip}</div>
+                  <div className="jh"><span><span className="jid">JOB-{j.job_id}</span><span className={`jsrc ${j.source?.startsWith("MANUAL")?"jsrc-test":"jsrc-manual"}`}>{j.source||"NVD"}</span></span><Status status={j.status}/></div>
+                  <div className="jcve">{j.cve_id}</div><div className="jhost">{j.host_name} · {j.host_ip}</div>
                   {j.log?.length>0&&<div className="jlog">{j.log.slice(-4).join("\n")}</div>}
                 </div>
               ))}
@@ -650,238 +635,93 @@ function App() {
       </div>
     </div>
 
-    {/* ── TEST INJECT PANEL ── */}
+    {/* PANEL IMPORT */}
     <div className={`test-panel ${testOpen?"open":""}`}>
-      <div className="tp-hdr">
-        <div className="tp-title">🧪 TEST INJECT CONSOLE</div>
-        <button className="btn" onClick={()=>setTestOpen(false)}>✕</button>
-      </div>
+      <div className="tp-hdr"><div className="tp-title">📥 IMPORT CVE (MISP → NVD + enrichissement)</div><button className="btn" onClick={()=>setTestOpen(false)}>✕</button></div>
       <div className="tp-body">
-
-        {/* SINGLE INJECT */}
         <div className="inj-form">
-          <div className="inj-title">◈ Injection CVE unique</div>
-
-          <div className="field">
-            <label>CVE ID</label>
-            <input
-              value={cveInput}
-              onChange={e=>setCveInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&doInject()}
-              placeholder="CVE-2024-12345"
-            />
+          <div className="inj-title">◈ Import CVE unique (KEV+EPSS+MITRE+BSRS)</div>
+          <div className="field"><label>CVE ID</label><input value={cveInput} onChange={e=>setCveInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doInject()} placeholder="CVE-2024-12345"/></div>
+          <div className="toggle-row"><span>Force re‑import (écrase existant)</span>
+            <label className="tgl"><input type="checkbox" checked={force} onChange={e=>setForce(e.target.checked)}/><div className="tgl-track"/><div className="tgl-thumb"/></label>
           </div>
-
-          <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
-            {[["Auto-fix (dispatch si CRITICAL/HIGH)",autoFix,setAutoFix],
-              ["Force re-injection si déjà connu",force,setForce]].map(([lbl,val,set])=>(
-              <div key={lbl} className="toggle-row">
-                <span>{lbl}</span>
-                <label className="tgl">
-                  <input type="checkbox" checked={val} onChange={e=>set(e.target.checked)}/>
-                  <div className="tgl-track"/><div className="tgl-thumb"/>
-                </label>
-              </div>
-            ))}
-          </div>
-
-          <button
-            className={`inject-btn ${injecting?"loading":""}`}
-            onClick={doInject} disabled={injecting}
-          >
-            {injecting ? "⟳  RÉCUPÉRATION NVD + PIPELINE..." : "⚡  INJECTER & DÉCLENCHER"}
+          <button className={`inject-btn ${injecting?"loading":""}`} onClick={doInject} disabled={injecting}>
+            {injecting ? "⟳  RÉCUPÉRATION MISP+NVD + ENRICHISSEMENT..." : "⚡  IMPORTER & ENRICHIR"}
           </button>
         </div>
 
-        {/* INJECT RESULT */}
         {injectResult && (
           <div className={`result-box ${injectResult.ok?"ok":"err"}`}>
-            <div className="result-hdr">
-              {injectResult.ok ? `✓ ${injectResult.cve_id} — Pipeline terminé` : `✗ ${injectResult.error||"Erreur"}`}
-            </div>
+            <div className="result-hdr">{injectResult.ok ? `✓ ${injectResult.cve_id} — BSRS: ${injectResult.result?.bsrs_avg||'?'}` : `✗ ${injectResult.error||"Erreur"}`}</div>
             <div className="result-body">
-              {injectResult.ok && (
+              {injectResult.ok && injectResult.result && (
                 <>
-                  {[
-                    ["1_nvd_fetch",   "NVD Fetch",    "📡"],
-                    ["2_cpe_match",   "CPE Matching", "🔍"],
-                    ["3_auto_patch",  "Auto-Patch",   "🛡"],
-                  ].map(([key,lbl,ic])=>{
-                    const s = injectResult.steps?.[key];
-                    if (!s) return null;
-                    return (
-                      <div key={key} className="step-row">
-                        <div className="step-icon">{s.ok?"✅":"❌"}</div>
-                        <div className="step-info">
-                          <div className="step-label">{lbl}</div>
-                          <div className="step-detail">
-                            {key==="1_nvd_fetch" && s.ok && `Score ${s.score} · ${s.cpes} CPE · ${s.refs} refs`}
-                            {key==="2_cpe_match" && `${s.match_count}/${s.total_hosts} hosts affectés`}
-                            {key==="2_cpe_match" && s.matched_hosts?.length>0 && (
-                              <div className="step-sub">{s.matched_hosts.join(", ")}</div>
-                            )}
-                            {key==="3_auto_patch" && s.skipped && "auto_fix=false — skipped"}
-                            {key==="3_auto_patch" && !s.skipped && `${s.job_count} job(s) créé(s)`}
-                            {key==="3_auto_patch" && !s.skipped && <div className="step-sub">{s.reason}</div>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="step-row"><div className="step-icon">📊</div><div className="step-info"><div className="step-label">BankShield Risk Score</div><div className="step-detail">Moyen: {injectResult.result.bsrs_avg} · {injectResult.result.affected_details?.[0]?.priority || 'N/A'}</div></div></div>
+                  <div className="step-row"><div className="step-icon">🔍</div><div className="step-info"><div className="step-label">Hosts affectés</div><div className="step-detail">{injectResult.result.affected_hosts?.join(', ') || 'Aucun'}</div></div></div>
+                  <div className="step-row"><div className="step-icon">🧬</div><div className="step-info"><div className="step-label">Enrichissement</div><div className="step-detail">KEV: {injectResult.result.enrichment?.kev_status?'✅':'❌'} · EPSS: {(injectResult.result.enrichment?.epss_score*100).toFixed(1)}% · MITRE: {injectResult.result.enrichment?.mitre_techniques} techniques</div></div></div>
                 </>
-              )}
-              {!injectResult.ok && injectResult.tips && (
-                <div style={{fontSize:9,color:"var(--t2)",lineHeight:1.7}}>
-                  {injectResult.tips.map((t,i)=><div key={i}>• {t}</div>)}
-                </div>
               )}
             </div>
           </div>
         )}
 
-        {/* QUICK CVEs */}
-        <div>
-          <div style={{fontSize:8,letterSpacing:"1.5px",color:"var(--t3)",textTransform:"uppercase",marginBottom:7,fontFamily:"var(--head)"}}>
-            CVE Célèbres — Cliquez pour injecter
-          </div>
-          <div className="quick-grid">
-            {QUICK_CVES.map(q=>(
-              <div key={q.id} className="quick-cve"
-                onClick={()=>{ setCveInput(q.id); }}>
-                <div className="qid">{q.id}</div>
-                <div className="qsev">
-                  <span className={`sev s${q.sev}`}>{q.sev}</span>
-                  <span style={{color:"var(--t3)",marginLeft:5}}>{q.score}</span>
-                </div>
-                <div style={{fontSize:7,color:"var(--t2)",marginTop:2}}>{q.label}</div>
-              </div>
-            ))}
-          </div>
+        <div><div style={{fontSize:8,letterSpacing:"1.5px",color:"var(--t3)",textTransform:"uppercase",marginBottom:7}}>CVE célèbres</div>
+          <div className="quick-grid">{QUICK_CVES.map(q=>(<div key={q.id} className="quick-cve" onClick={()=>{ setCveInput(q.id); }}><div className="qid">{q.id}</div><div className="qsev"><span className={`sev s${q.sev}`}>{q.sev}</span><span style={{color:"var(--t3)",marginLeft:5}}>{q.score}</span></div><div style={{fontSize:7,color:"var(--t2)",marginTop:2}}>{q.label}</div></div>))}</div>
         </div>
 
-        {/* BATCH */}
         <div className="inj-form" style={{borderColor:"var(--ac3)"}}>
-          <div className="inj-title" style={{color:"var(--ac)"}}>◈ Injection batch (multi-CVE)</div>
-          <div className="field">
-            <label>CVE IDs (un par ligne ou séparés par virgule)</label>
-            <textarea
-              className="batch-area"
-              value={batchInput}
-              onChange={e=>setBatchInput(e.target.value)}
-              placeholder={"CVE-2021-44228\nCVE-2022-22965\nCVE-2023-44487"}
-            />
-          </div>
-          <button className={`inject-btn ${batching?"loading":""}`}
-            onClick={doBatch} disabled={batching}
-            style={{background:"linear-gradient(135deg,var(--ac3),var(--ac2))"}}>
-            {batching?"⟳  BATCH EN COURS...":"⚡  INJECTER BATCH"}
-          </button>
-          {batchResult && (
-            <div style={{marginTop:10,padding:9,background:"var(--bg4)",borderRadius:3,fontSize:9}}>
-              <div style={{color:batchResult.success>0?"var(--gr)":"var(--rd)",marginBottom:5,fontFamily:"var(--head)"}}>
-                Batch: {batchResult.success}/{batchResult.total} OK · {batchResult.errors} erreurs
-              </div>
-              {Object.entries(batchResult.results||{}).map(([id,r])=>(
-                <div key={id} style={{color:"var(--t2)",marginBottom:2}}>
-                  ✓ {id} — <span className={`sev s${r.severity}`}>{r.severity}</span> · {r.hosts?.length||0} hosts
-                </div>
-              ))}
-              {Object.entries(batchResult.failed||{}).map(([id,e])=>(
-                <div key={id} style={{color:"var(--rd)",marginBottom:2}}>✗ {id} — {e}</div>
-              ))}
-            </div>
-          )}
+          <div className="inj-title" style={{color:"var(--ac)"}}>◈ Import batch (multi-CVE)</div>
+          <div className="field"><label>CVE IDs (un par ligne ou séparés par virgule)</label><textarea className="batch-area" value={batchInput} onChange={e=>setBatchInput(e.target.value)} placeholder={"CVE-2021-44228\nCVE-2022-22965"}/></div>
+          <button className={`inject-btn ${batching?"loading":""}`} onClick={doBatch} disabled={batching} style={{background:"linear-gradient(135deg,var(--ac3),var(--ac2))"}}>{batching?"⟳  BATCH EN COURS...":"⚡  IMPORTER BATCH"}</button>
+          {batchResult && (<div style={{marginTop:10,padding:9,background:"var(--bg4)",borderRadius:3,fontSize:9}}><div style={{color:Object.keys(batchResult.results||{}).length>0?"var(--gr)":"var(--rd)",marginBottom:5}}>Batch: {Object.keys(batchResult.results||{}).length} OK · {Object.keys(batchResult.errors||{}).length} erreurs</div></div>)}
         </div>
 
-        {/* TEST LOG */}
-        <div className="tlog">
-          <div className="tlog-hdr">
-            <span>PIPELINE LOG</span>
-            <span style={{color:"var(--t3)"}}>{testLogs.length} entrées</span>
-          </div>
-          <div className="tlog-body" ref={logRef}>
-            {testLogs.length===0&&<div className="ll-d">En attente d'injections...</div>}
-            {testLogs.map((l,i)=>(
-              <div key={i} className={`ll-${l.level==="success"?"s":l.level==="error"?"e":l.level==="warn"?"w":"i"}`}>
-                <span style={{color:"var(--t4)",marginRight:6}}>
-                  {new Date(l.ts).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
-                </span>
-                {l.msg}
-              </div>
-            ))}
-            <div className="ll-i"><span className="cursor"/></div>
-          </div>
-        </div>
-
+        <div className="tlog"><div className="tlog-hdr"><span>PIPELINE LOG (CTI)</span><span>{testLogs.length} entrées</span></div><div className="tlog-body" ref={logRef}>{testLogs.length===0&&<div className="ll-d">En attente d'imports...</div>}{testLogs.map((l,i)=>(<div key={i} className={`ll-${l.level==="success"?"s":l.level==="error"?"e":l.level==="warn"?"w":"i"}`}><span style={{color:"var(--t4)",marginRight:6}}>{new Date(l.ts).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span>{l.msg}</div>))}<div className="ll-i"><span className="cursor"/></div></div></div>
       </div>
     </div>
 
-    {/* MODAL CVE DETAIL */}
+    {/* MODAL DÉTAIL AVEC MITRE ATT&CK TOUJOURS VISIBLE */}
     {selCve&&(
       <div className="ov open" onClick={()=>setSel(null)}>
         <div className="modal" onClick={e=>e.stopPropagation()}>
-          <div className="mh">
-            <div className="mtit">
-              {selCve.id}
-              {selCve.inject_source?.startsWith("TEST")&&
-                <span className="src-badge src-test" style={{marginLeft:8}}>TEST INJECT</span>}
-            </div>
-            <button className="btn" onClick={()=>setSel(null)}>✕</button>
-          </div>
+          <div className="mh"><div className="mtit">{selCve.id}{selCve.inject_source?.startsWith("MANUAL")&&<span className="src-badge src-test" style={{marginLeft:8}}>IMPORT</span>}</div><button className="btn" onClick={()=>setSel(null)}>✕</button></div>
           <div className="mb">
-            {selCve.status==="patched"&&(
-              <div style={{display:"flex",alignItems:"center",gap:7,
-                background:"rgba(0,148,72,.07)",border:"1px solid var(--gr2)",
-                borderRadius:3,padding:"10px 13px",marginBottom:12,fontSize:9,color:"var(--gr)"}}>
-                ✅ Corrigé — {new Date(selCve.patched_at||Date.now()).toLocaleTimeString("fr-FR")}
-              </div>
-            )}
+            {selCve.status==="patched"&&(<div style={{display:"flex",alignItems:"center",gap:7,background:"rgba(0,148,72,.07)",border:"1px solid var(--gr2)",borderRadius:3,padding:"10px 13px",marginBottom:12,fontSize:9,color:"var(--gr)"}}>✅ Corrigé — {new Date(selCve.patched_at||Date.now()).toLocaleTimeString("fr-FR")}</div>)}
             <div className="dg">
               {[
                 ["Sévérité",<span className={`sev s${selCve.severity}`}>{selCve.severity}</span>],
-                ["CVSS",<span style={{fontFamily:"var(--head)",fontSize:20,color:SEV_COLOR[selCve.severity]}}>{selCve.score?.toFixed(1)}</span>],
+                ["CVSS",<span style={{fontSize:20,color:selCve.severity==="CRITICAL"?"var(--rd)":selCve.severity==="HIGH"?"var(--or)":"var(--yw)"}}>{selCve.score?.toFixed(1)}</span>],
+                ["BSRS",<div><span style={{fontSize:20,fontWeight:'bold',color: (selCve.affected_details?.[0]?.bsrs||0)>=80?'var(--rd)': (selCve.affected_details?.[0]?.bsrs||0)>=60?'var(--or)':'var(--t2)'}}>{selCve.affected_details?.[0]?.bsrs?.toFixed(1)||'N/A'}</span><div style={{fontSize:9}}>Priorité: {selCve.affected_details?.[0]?.priority||'N/A'}</div></div>],
+                ["CISA KEV",selCve.kev_status ? <span style={{color:"var(--rd)"}}>✅ Oui (ajouté {selCve.kev_date || '?'}){selCve.kev_ransomware==="Known" && <span style={{marginLeft:5}}>🔴 Ransomware connu</span>}</span> : <span style={{color:"var(--t3)"}}>❌ Non</span>],
+                ["EPSS",<div>{(selCve.epss_score*100).toFixed(1)}% probabilité<br/><span style={{fontSize:7}}>percentile {(selCve.epss_percentile*100).toFixed(0)} · {selCve.epss_date ? `date ${selCve.epss_date}` : ''}</span></div>],
                 ["Statut",<Status status={selCve.status}/>],
-                ["Source",<span style={{fontSize:9,color:"var(--pu)"}}>{selCve.inject_source||"NVD-POLL"}</span>],
-                ["Publié",<span style={{fontSize:9}}>{new Date(selCve.published).toLocaleString("fr-FR")}</span>],
-                ["Vecteur",<span style={{fontSize:8,wordBreak:"break-all"}}>{selCve.vector||"—"}</span>],
-              ].map(([l,v],i)=>(
-                <div key={i} className="di"><div className="dil">{l}</div><div style={{marginTop:3}}>{v}</div></div>
-              ))}
+              ].map(([l,v],i)=>(<div key={i} className="di"><div className="dil">{l}</div><div style={{marginTop:3}}>{v}</div></div>))}
             </div>
+            {/* MITRE ATT&CK - TOUJOURS AFFICHÉ, MÊME VIDE */}
             <div className="di" style={{marginBottom:12}}>
-              <div className="dil">Hosts bancaires affectés</div>
+              <div className="dil">MITRE ATT&CK</div>
               <div style={{marginTop:5}}>
-                {selCve.affected_hosts?.length>0
-                  ?selCve.affected_hosts.map(h=>{
-                    const hi=hosts[h];
-                    return <span key={h} className="htag">⬡ {h} {hi?`(${hi.os?.split(" ")[0]})`:""}</span>;
-                  })
-                  :<span style={{fontSize:9,color:"var(--t3)"}}>Aucun host affecté</span>}
+                {selCve.mitre_attck?.techniques?.length > 0 ? (
+                  <div style={{marginBottom:6}}>
+                    <span style={{color:"var(--t3)",fontSize:8}}>Techniques : </span>
+                    {selCve.mitre_attck.techniques.map(t => <span key={t} className="mitre-chip">{t}</span>)}
+                  </div>
+                ) : (
+                  <div style={{color:"var(--t3)",fontSize:8, marginBottom:6}}>Aucune technique MITRE référencée</div>
+                )}
+                {selCve.mitre_attck?.capec_ids?.length > 0 && (
+                  <div>
+                    <span style={{color:"var(--t3)",fontSize:8}}>CAPEC IDs : </span>
+                    {selCve.mitre_attck.capec_ids.map(c => <span key={c} className="mitre-chip">{c}</span>)}
+                  </div>
+                )}
               </div>
             </div>
-            {selCve.cpes?.length>0&&(
-              <div style={{marginBottom:12}}>
-                <div className="dil">CPE NVD ({selCve.cpes.length})</div>
-                <div style={{marginTop:5}}>{selCve.cpes.slice(0,6).map((c,i)=><span key={i} className="cpe">{c.slice(0,55)}</span>)}</div>
-              </div>
-            )}
+            <div className="di" style={{marginBottom:12}}><div className="dil">Hosts bancaires affectés</div><div style={{marginTop:5}}>{selCve.affected_hosts?.length>0?selCve.affected_hosts.map(h=>{const hi=hosts[h];return <span key={h} className="htag">⬡ {h} {hi?`(${hi.os?.split(" ")[0]})`:""}</span>;}):<span style={{fontSize:9,color:"var(--t3)"}}>Aucun host affecté</span>}</div></div>
+            {selCve.cpes?.length>0&&(<div style={{marginBottom:12}}><div className="dil">CPE NVD ({selCve.cpes.length})</div><div style={{marginTop:5}}>{selCve.cpes.slice(0,6).map((c,i)=><span key={i} className="cpe">{c.slice(0,55)}</span>)}</div></div>)}
             <div className="desc">{selCve.description}</div>
-            {selCve.references?.length>0&&(
-              <div style={{marginBottom:12}}>
-                <div className="dil" style={{marginBottom:5}}>Références</div>
-                {selCve.references.map((r,i)=><a key={i} href={r} target="_blank" className="ref">{r}</a>)}
-              </div>
-            )}
-            {selCve.affected_hosts?.length>0&&selCve.status!=="patched"&&(
-              <div className="fix-ban">
-                <div style={{fontSize:18}}>🛡</div>
-                <div>
-                  <div style={{fontWeight:600,marginBottom:2,fontFamily:"var(--head)",fontSize:11}}>Correction automatique</div>
-                  <div style={{fontSize:9,color:"var(--t2)"}}>Dispatch vers {selCve.affected_hosts.length} agent(s)</div>
-                </div>
-                <button className="fix-btn" onClick={()=>triggerFix(selCve.id)}>⚡ CORRIGER</button>
-              </div>
-            )}
+            {selCve.references?.length>0&&(<div style={{marginBottom:12}}><div className="dil">Références</div>{selCve.references.map((r,i)=><a key={i} href={r} target="_blank" className="ref">{r}</a>)}</div>)}
+            {selCve.affected_hosts?.length>0&&selCve.status!=="patched"&&(<div className="fix-ban"><div style={{fontSize:18}}>🛡</div><div><div style={{fontWeight:600,marginBottom:2,fontFamily:"var(--head)",fontSize:11}}>Correction automatique</div><div style={{fontSize:9,color:"var(--t2)"}}>Dispatch vers {selCve.affected_hosts.length} agent(s)</div></div><button className="fix-btn" onClick={()=>triggerFix(selCve.id)}>⚡ CORRIGER</button></div>)}
           </div>
         </div>
       </div>
